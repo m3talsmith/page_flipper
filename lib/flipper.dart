@@ -1,5 +1,4 @@
-import 'dart:developer';
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 enum FlipperDirection { vertical, horizontal }
@@ -23,14 +22,11 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
   List<Widget> _children = [];
 
   _sortPages(nextPageIndex) {
-    log('sort pages: $nextPageIndex');
     final pages = <Widget>[];
     for (var i = nextPageIndex; i < _children.length; i++) {
-      log('add next page $i');
       pages.add(_children[i]);
     }
     for (var i = 0; i < nextPageIndex; i++) {
-      log('add previous page $i');
       pages.add(_children[i]);
     }
     setState(() {
@@ -39,7 +35,6 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
   }
 
   _flipLeft() {
-    log('flip left');
     _animationController?.forward();
     int nextPageIndex = 1;
     if (nextPageIndex >= _children.length) {
@@ -49,21 +44,18 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
   }
 
   _flipRight() {
-    log('flip right');
     _animationController?.reverse();
     int nextPageIndex = _children.length - 1;
     _sortPages(nextPageIndex);
   }
 
   _flipUp() {
-    log('flip up');
     _animationController?.forward();
     int nextPageIndex = 1;
     _sortPages(nextPageIndex);
   }
 
   _flipDown() {
-    log('flip down');
     _animationController?.reverse();
     int nextPageIndex = _children.length - 1;
     _sortPages(nextPageIndex);
@@ -71,15 +63,12 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
 
   void _updateAnimation(AnimationStatus status) {
     if (status == AnimationStatus.completed ||
-        status == AnimationStatus.dismissed) {
-      log('animation status: $status');
-    }
+        status == AnimationStatus.dismissed) {}
   }
 
   _generateStack() {
     return GestureDetector(
       onHorizontalDragEnd: (details) {
-        log('horizontal drag end: ${details.velocity.pixelsPerSecond.dx}');
         if (details.velocity.pixelsPerSecond.dx < 0) {
           _flipLeft();
         } else {
@@ -87,14 +76,33 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
         }
       },
       onVerticalDragEnd: (details) {
-        log('vertical drag end: ${details.velocity.pixelsPerSecond.dy}');
         if (details.velocity.pixelsPerSecond.dy < 0) {
           _flipUp();
         } else {
           _flipDown();
         }
       },
-      child: _children[0],
+      child: Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            if (event.scrollDelta.dy != 0) {
+              if (event.scrollDelta.dy < 0) {
+                _flipDown();
+              } else {
+                _flipUp();
+              }
+            }
+            if (event.scrollDelta.dx != 0) {
+              if (event.scrollDelta.dx < 0) {
+                _flipRight();
+              } else {
+                _flipLeft();
+              }
+            }
+          }
+        },
+        child: _children[0],
+      ),
     );
   }
 
