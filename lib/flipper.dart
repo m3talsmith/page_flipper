@@ -77,27 +77,27 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
       onHorizontalDragEnd: (details) {
         if (details.velocity.pixelsPerSecond.dx < 0) {
           setState(() {
-            msg = 'drag left - flip left';
-          });
-          _flipLeft();
-        } else {
-          setState(() {
-            msg = 'drag right - flip right';
+            msg = 'drag left - flip right';
           });
           _flipRight();
+        } else {
+          setState(() {
+            msg = 'drag right - flip left';
+          });
+          _flipLeft();
         }
       },
       onVerticalDragEnd: (details) {
         if (details.velocity.pixelsPerSecond.dy < 0) {
           setState(() {
-            msg = 'drag up - flip up';
-          });
-          _flipUp();
-        } else {
-          setState(() {
-            msg = 'drag down - flip down';
+            msg = 'drag up - flip down';
           });
           _flipDown();
+        } else {
+          setState(() {
+            msg = 'drag down - flip up';
+          });
+          _flipUp();
         }
       },
       child: Listener(
@@ -164,7 +164,7 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _children = widget.children;
+    _children = widget.children.reversed.toList();
     _sortPages(0);
     _animationController = AnimationController(
       vsync: this,
