@@ -20,6 +20,7 @@ class Flipper extends StatefulWidget {
 class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
   AnimationController? _animationController;
   List<Widget> _children = [];
+  String msg = '';
 
   _sortPages(nextPageIndex) {
     final pages = <Widget>[];
@@ -66,19 +67,36 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
         status == AnimationStatus.dismissed) {}
   }
 
-  _generateStack() {
+  _generateStack(context) {
+    // Future.delayed(const Duration(milliseconds: 10000), () {
+    //   setState(() {
+    //     msg = '';
+    //   });
+    // });
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         if (details.velocity.pixelsPerSecond.dx < 0) {
+          setState(() {
+            msg = 'drag left - flip left';
+          });
           _flipLeft();
         } else {
+          setState(() {
+            msg = 'drag right - flip right';
+          });
           _flipRight();
         }
       },
       onVerticalDragEnd: (details) {
         if (details.velocity.pixelsPerSecond.dy < 0) {
+          setState(() {
+            msg = 'drag up - flip up';
+          });
           _flipUp();
         } else {
+          setState(() {
+            msg = 'drag down - flip down';
+          });
           _flipDown();
         }
       },
@@ -87,21 +105,58 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
           if (event is PointerScrollEvent) {
             if (event.scrollDelta.dy != 0) {
               if (event.scrollDelta.dy < 0) {
+                setState(() {
+                  msg = 'scroll up - flip down';
+                });
                 _flipDown();
               } else {
+                setState(() {
+                  msg = 'scroll down - flip up';
+                });
                 _flipUp();
               }
             }
             if (event.scrollDelta.dx != 0) {
               if (event.scrollDelta.dx < 0) {
+                setState(() {
+                  msg = 'scroll left - flip right';
+                });
                 _flipRight();
               } else {
+                setState(() {
+                  msg = 'scroll right - flip left';
+                });
                 _flipLeft();
               }
             }
           }
         },
-        child: _children[0],
+        child: Stack(
+          children: [
+            ..._children,
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.25,
+              left: 0,
+              right: 0,
+
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(100),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    msg.isNotEmpty ? msg : 'waiting for action...',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge?.copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -126,6 +181,6 @@ class _FlipperState extends State<Flipper> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return _generateStack();
+    return _generateStack(context);
   }
 }
